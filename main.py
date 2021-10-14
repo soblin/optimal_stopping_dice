@@ -3,7 +3,7 @@
 from copy import deepcopy
 import numpy as np
 
-class Trial:
+class TrialNode:
     def __init__(self, history):
         self.history = deepcopy(history)
         self.opt_stop_time = -1 # when this trial stopped
@@ -41,7 +41,7 @@ def run_trial(trials, N):
     dices = [1, 2, 3, 4, 5, 6]
     if len(trials) == 0:
         for i in dices:
-            trial = Trial([i])
+            trial = TrialNode([i])
             remaining = N - 1
             if is_optimal(remaining, i):
                 trial.opt_stop_time = 1
@@ -62,7 +62,7 @@ def run_trial(trials, N):
         for i in dices:
             remaining = N - len(cur_history)
             new_history = cur_history + [i]
-            new_trial = Trial(new_history)
+            new_trial = TrialNode(new_history)
             if is_optimal(remaining, i):
                 # optimal stopping
                 new_trial.opt_stop_time = len(new_history)
@@ -75,7 +75,7 @@ def run_trial(trials, N):
 def main():
     N = 10 # the # of drawings
 
-    trials = [] # []Trial
+    trials = []  # []TrialNode
     for i in range(N):
         print("drawing {}-th dice".format(i+1))
         trials = run_trial(trials, N)
