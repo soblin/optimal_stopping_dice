@@ -4,11 +4,12 @@ from copy import deepcopy
 import numpy as np
 
 class TrialNode:
-    def __init__(self, history):
-        self.history = deepcopy(history)
-        self.opt_stop_time = -1 # when this trial stopped
-        self.opt_value = -1
+    def __init__(self, index):
+        self.index = index # the # of drawings so far
+        self.opt_stop_index = -1 # when this trial stopped
+        self.opt_stop_value = -1
         self.prob = 0.0
+        self.nexts = []
 
 def is_optimal(remaining, dice):
     if remaining == 1:
@@ -34,68 +35,39 @@ def is_optimal(remaining, dice):
         else:
             return False
 
-def run_trial(trials, N):
+def run_trial(root, N, n_remaining_before_draw, results):
     # for the trial in trials, continue dicing if not it was not stopped,
     # and then optimally stop if the new dice is optimal
-
     dices = [1, 2, 3, 4, 5, 6]
-    if len(trials) == 0:
-        for i in dices:
-            trial = TrialNode([i])
-            remaining = N - 1
-            if is_optimal(remaining, i):
-                trial.opt_stop_time = 1
-                trial.opt_value = i
-
-            trial.prob = 1.0 / 6.0
-            trials.append(trial)
-        return trials
 
     new_trials = []
-    for trial in trials:
-        if trial.opt_stop_time != -1:
-            # this trial was already optimally stopped
+    for i in dices:
+        # NOTE: if n_remaining_before_draw == 1, optimal, terminate here
+        if is_optimal(n_remaining_before_draw, i):
+            trial = TrialNode(root.index + 1)
+            trial.opt_stop_time = root.index + 1
+            trial.opt_value = i
+            trial.prob = root.prob / 6.0
+            root.nexts.append(trial)
+            assert root.index + n_remaining_before_draw == N
+            results.append(trial)
+        else:
+            trial = TrialNode(root.index + 1)
+            trial.prob = root.prob / 6.0
+            root.nexts.append(trial)
             new_trials.append(trial)
-            continue
-        
-        cur_history = trial.history
-        for i in dices:
-            remaining = N - len(cur_history)
-            new_history = cur_history + [i]
-            new_trial = TrialNode(new_history)
-            if is_optimal(remaining, i):
-                # optimal stopping
-                new_trial.opt_stop_time = len(new_history)
-                new_trial.opt_value = i
 
-            new_trials.append(new_trial)
-
-    return new_trials
+    for new_trial in new_trials:
+        run_trial(new_trial, N, n_remaining_before_draw - 1, results)
 
 def main():
     N = 10 # the # of drawings
 
-    trials = []  # []TrialNode
-    for i in range(N):
-        print("drawing {}-th dice".format(i+1))
-        trials = run_trial(trials, N)
-    
-    print("There are {} trials".format(len(trials)))
-
-    results = {}
-    values = []
-    for trial in trials:
-        # if trial.opt_stop_time == -1, then it terminated without chances of optimal stopping :)
-        n_drawing = len(trial.history)
-        last_dice = trial.opt_value
-        results.setdefault(n_drawing, {})[last_dice] = results.get(n_drawing, {}).get(last_dice, 0) + 1
-        values.append(trial.opt_value)
-
-    print("----------- stat -----------")
-    print("{0:7} {1:8} {2:10}".format("#drawings", "last_dice", "#cases"))
-    for n_drawing, result in results.items():
-        for last_dice, n_cases in result.items():
-            print("{0:7} {1:8} {2:10}".format(n_drawing, last_dice, n_cases))
+    root = TrialNode(0)  # []TrialNode
+    root.prob = 1.0
+    results = []
+    run_trial(root, N, N, results)
+    print(len(results))
 
 if __name__  == '__main__':
     main()
