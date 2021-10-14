@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 import numpy as np
+import argparse
 
 class TrialNode:
     def __init__(self, index):
@@ -60,9 +61,7 @@ def run_trial(root, N, n_remaining_before_draw, results):
     for new_trial in new_trials:
         run_trial(new_trial, N, n_remaining_before_draw - 1, results)
 
-def main():
-    N = 10 # the # of drawings
-
+def main(N):
     root = TrialNode(0)  # []TrialNode
     root.prob = 1.0
     results = []
@@ -94,4 +93,9 @@ def main():
     print("sum of prob = {}".format(np.sum(weights)))
 
 if __name__  == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('N', help='number of trials')
+    args = parser.parse_args()
+
+    N = int(args.N)
+    main(N)
