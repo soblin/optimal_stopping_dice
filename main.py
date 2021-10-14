@@ -6,7 +6,7 @@ import argparse
 
 class TrialNode:
     def __init__(self, index):
-        self.index = index # the # of drawings so far
+        self.index = index  # first trial is 1
         self.opt_stop_index = -1 # when this trial stopped
         self.opt_stop_value = -1
         self.prob = 0.0

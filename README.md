@@ -1,9 +1,9 @@
 ## optimal_stopping_dice
 
-Draw a dice several times, and optimally stop the trial intermediately to maximize the expectation of last value. Then take the statistics of how all possible trials would end.
+Draw a dice up to N-times, and optimally stop the trial intermediately to maximize the expectation of last value. Then take the statistics of how all possible trials would end.
 
 ```bash
-($) python3 main.py 10
+($) python3 main.py 3
 
 ------------------------- stat -------------------------
 #drawings   last_dice   #cases       prob
