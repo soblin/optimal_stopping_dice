@@ -46,7 +46,7 @@ def run_trial(root, N, n_remaining_before_draw, results):
         if is_optimal(n_remaining_before_draw, i):
             trial = TrialNode(root.index + 1)
             trial.opt_stop_time = root.index + 1
-            trial.opt_value = i
+            trial.opt_stop_value = i
             trial.prob = root.prob / 6.0
             root.nexts.append(trial)
             assert root.index + n_remaining_before_draw == N
@@ -67,7 +67,31 @@ def main():
     root.prob = 1.0
     results = []
     run_trial(root, N, N, results)
-    print(len(results))
+
+    stats = {}  # mapping [n_drawing][last_dice] --> n_case
+    probs = {}  # mapping [n_drawing][last_dice] --> prob
+    values = []
+    weights = []
+    for result in results:
+        n_drawing = result.opt_stop_time
+        last_dice = result.opt_stop_value
+        stats.setdefault(n_drawing, {})[last_dice] = stats.setdefault(n_drawing, {}).get(last_dice, 0) + 1
+        probs.setdefault(n_drawing, {})[last_dice] = probs.setdefault(n_drawing, {}).get(last_dice, 0.0) + result.prob
+        values.append(result.opt_stop_value)
+        weights.append(result.prob)
+
+    print("------------------------- stat -------------------------")
+    print("{0:7}   {1:8}   {2:10}   {3:10}".format("#drawings", "last_dice", "#cases", "prob"))
+    for n_drawing, result in stats.items():
+        for last_dice, n_cases in result.items():
+            prob = probs[n_drawing][last_dice]
+            print("{0:7}   {1:8}   {2:10}   {3:10}".format(n_drawing, last_dice, n_cases, prob))
+
+    values = np.array(values)
+    weights = np.array(weights)
+    print("")
+    print("expectation of last_dice is {}".format(np.average(values, weights=weights)))
+    print("sum of prob = {}".format(np.sum(weights)))
 
 if __name__  == '__main__':
     main()
